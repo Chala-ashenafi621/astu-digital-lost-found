@@ -164,7 +164,7 @@ function Claims() {
                     decide.mutate({
                       claimId: claim.id,
                       decision: "approved",
-                      note: notes[claim.id] || undefined,
+                      ...(notes[claim.id] ? { note: notes[claim.id]! } : {}),
                     })
                   }
                 >
@@ -177,7 +177,7 @@ function Claims() {
                     decide.mutate({
                       claimId: claim.id,
                       decision: "rejected",
-                      note: notes[claim.id] || undefined,
+                      ...(notes[claim.id] ? { note: notes[claim.id]! } : {}),
                     })
                   }
                 >
