@@ -16,7 +16,7 @@ export const Route = createFileRoute("/_authenticated/my-items")({
       { property: "og:description", content: "Manage your ASTU lost and found reports." },
     ],
   }),
-  component: MyItems;
+  component: MyItems,
 });
 
 function MyItems() {
