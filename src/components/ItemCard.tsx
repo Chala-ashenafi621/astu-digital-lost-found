@@ -17,8 +17,10 @@ export function ItemCard({ item }: { item: PublicItem }) {
             src={item.images[0]}
             alt={item.title}
             loading="lazy"
+            suppressHydrationWarning
             className="size-full object-cover transition group-hover:scale-105"
           />
+
         ) : (
           <div className="grid size-full place-items-center text-muted-foreground">
             <ImageOff className="size-8" />
