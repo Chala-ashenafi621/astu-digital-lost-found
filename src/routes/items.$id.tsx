@@ -94,7 +94,9 @@ function ItemDetail() {
                 key={url}
                 src={url}
                 alt={item.title}
+                suppressHydrationWarning
                 className="w-full rounded-xl border border-border object-cover"
+
               />
             ))
           ) : (
