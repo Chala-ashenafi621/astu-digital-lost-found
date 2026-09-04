@@ -51,7 +51,7 @@ function Browse() {
     ...(type ? { type } : {}),
     ...(category ? { category } : {}),
   };
-  const { data, isFetching } = useQuery(browseQuery(filters));
+  const { data, isFetching } = useSuspenseQuery(browseQuery(filters));
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-10">
