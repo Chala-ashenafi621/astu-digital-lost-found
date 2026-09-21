@@ -74,12 +74,22 @@ export const adminListItems = createServerFn({ method: "GET" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     let query = supabaseAdmin
       .from("items")
-      .select("*, profiles:reporter_id(full_name, email)")
+      .select("*")
       .order("created_at", { ascending: false })
       .limit(200);
     if (data.moderation) query = query.eq("moderation", data.moderation);
-    const { data: rows } = await query;
-    return rows ?? [];
+    const { data: rows, error } = await query;
+    if (error) throw new Error(error.message);
+    // reporter_id references auth.users, so the reporter profile is looked up
+    // separately (no PostgREST relationship exists between items and profiles).
+    const ids = [...new Set((rows ?? []).map((r) => r.reporter_id))];
+    const { data: profiles } = ids.length
+      ? await supabaseAdmin.from("profiles").select("id, full_name, email").in("id", ids)
+      : { data: [] as { id: string; full_name: string; email: string }[] };
+    return (rows ?? []).map((r) => ({
+      ...r,
+      profiles: (profiles ?? []).find((p) => p.id === r.reporter_id) ?? null,
+    }));
   });
 
 export const adminModerateItem = createServerFn({ method: "POST" })
