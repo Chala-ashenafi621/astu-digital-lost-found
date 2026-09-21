@@ -74,12 +74,22 @@ export const adminListItems = createServerFn({ method: "GET" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     let query = supabaseAdmin
       .from("items")
-      .select("*, profiles:reporter_id(full_name, email)")
+      .select("*")
       .order("created_at", { ascending: false })
       .limit(200);
     if (data.moderation) query = query.eq("moderation", data.moderation);
-    const { data: rows } = await query;
-    return rows ?? [];
+    const { data: rows, error } = await query;
+    if (error) throw new Error(error.message);
+    // reporter_id references auth.users, so the reporter profile is looked up
+    // separately (no PostgREST relationship exists between items and profiles).
+    const ids = [...new Set((rows ?? []).map((r) => r.reporter_id))];
+    const { data: profiles } = ids.length
+      ? await supabaseAdmin.from("profiles").select("id, full_name, email").in("id", ids)
+      : { data: [] as { id: string; full_name: string; email: string }[] };
+    return (rows ?? []).map((r) => ({
+      ...r,
+      profiles: (profiles ?? []).find((p) => p.id === r.reporter_id) ?? null,
+    }));
   });
 
 export const adminModerateItem = createServerFn({ method: "POST" })
@@ -160,13 +170,21 @@ export const adminListClaims = createServerFn({ method: "GET" })
     let query = supabaseAdmin
       .from("claims")
       .select(
-        "*, items(id, title, type, status), profiles:claimant_id(full_name, email, phone, department), claim_evidence_files(id, storage_path, mime_type, size_bytes)",
+        "*, items(id, title, type, status), claim_evidence_files(id, storage_path, mime_type, size_bytes)",
       )
       .order("created_at", { ascending: false })
       .limit(200);
     if (data.status) query = query.eq("status", data.status);
-    const { data: rows } = await query;
-    if (!rows) return [];
+    const { data: rows, error } = await query;
+    if (error) throw new Error(error.message);
+    if (!rows || rows.length === 0) return [];
+
+    // claimant_id references auth.users, so claimant profiles are fetched separately.
+    const ids = [...new Set(rows.map((r: any) => r.claimant_id))];
+    const { data: profiles } = await supabaseAdmin
+      .from("profiles")
+      .select("id, full_name, email, phone, department")
+      .in("id", ids);
 
     const { signPaths } = await import("./server-helpers.server");
     const signed = await signPaths(
@@ -176,6 +194,7 @@ export const adminListClaims = createServerFn({ method: "GET" })
     );
     return rows.map((r: any) => ({
       ...r,
+      profiles: (profiles ?? []).find((p) => p.id === r.claimant_id) ?? null,
       evidence: (r.claim_evidence_files ?? [])
         .map((f: any) => ({ id: f.id, mime: f.mime_type, url: signed[f.storage_path] }))
         .filter((f: any) => Boolean(f.url)),
