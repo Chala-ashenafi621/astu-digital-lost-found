@@ -24,17 +24,17 @@ export function ChangePasswordForm({ email }: { email: string }) {
   async function submit(event: React.FormEvent) {
     event.preventDefault();
     const problem = passwordProblem(next, confirm);
-    if (problem) return toast.error(problem);
-    if (next === current) return toast.error("New password must differ from the current one.");
+    if (problem) { toast.error(problem); return; }
+    if (next === current) { toast.error("New password must differ from the current one."); return; }
     setBusy(true);
     try {
       const { error: verifyError } = await supabase.auth.signInWithPassword({
         email,
         password: current,
       });
-      if (verifyError) return toast.error("Current password is incorrect.");
+      if (verifyError) { toast.error("Current password is incorrect."); return; }
       const { error } = await supabase.auth.updateUser({ password: next });
-      if (error) return toast.error(error.message);
+      if (error) { toast.error(error.message); return; }
       setCurrent("");
       setNext("");
       setConfirm("");

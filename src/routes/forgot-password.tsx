@@ -28,14 +28,14 @@ function ForgotPassword() {
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
-    if (!isAstuEmail(email)) return toast.error("Please use your @astu.edu.et email address.");
+    if (!isAstuEmail(email)) { toast.error("Please use your @astu.edu.et email address."); return; }
     setBusy(true);
     const { error } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
       redirectTo: `${window.location.origin}/reset-password`,
     });
     setBusy(false);
     // Same message whether or not the account exists, to avoid revealing registered emails.
-    if (error && error.status === 429) return toast.error("Too many requests. Please try again later.");
+    if (error && error.status === 429) { toast.error("Too many requests. Please try again later."); return; }
     setSent(true);
   }
 

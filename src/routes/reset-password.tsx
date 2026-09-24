@@ -47,11 +47,11 @@ function ResetPassword() {
   async function submit(event: React.FormEvent) {
     event.preventDefault();
     const problem = passwordProblem(password, confirm);
-    if (problem) return toast.error(problem);
+    if (problem) { toast.error(problem); return; }
     setBusy(true);
     const { error } = await supabase.auth.updateUser({ password });
     setBusy(false);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     await supabase.auth.signOut();
     toast.success("Password updated. Please sign in with your new password.");
     navigate({ to: "/auth" });
