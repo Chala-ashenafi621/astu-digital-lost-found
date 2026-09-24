@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { getMe, updateProfile } from "@/lib/auth.functions";
+import { ChangePasswordForm } from "@/components/ChangePasswordForm";
 
 export const Route = createFileRoute("/_authenticated/profile")({
   head: () => ({
@@ -95,6 +96,7 @@ function ProfilePage() {
           {busy ? "Saving…" : "Save profile"}
         </Button>
       </form>
+      <ChangePasswordForm email={me?.profile?.email ?? ""} />
     </main>
   );
 }
