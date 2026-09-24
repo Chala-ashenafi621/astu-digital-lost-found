@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -111,6 +111,9 @@ function SignInForm() {
       <Button type="submit" className="w-full" disabled={busy}>
         {busy ? "Signing in…" : "Sign in"}
       </Button>
+      <p className="text-center text-sm">
+        <Link to="/forgot-password" className="underline">Forgot password?</Link>
+      </p>
     </form>
   );
 }
